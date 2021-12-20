@@ -6,7 +6,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
-using System.Linq.Expressions;
+using System.ComponentModel.DataAnnotations;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -20,7 +20,9 @@ namespace BrokerAppTest.ViewModels
         private IEventAggregator _eventAggregator;
         private readonly DispatcherTimer _timer;
         private decimal _playersDepo;
+        private decimal _stockPrice;
         private int _playersStocks;
+        private int _botsStocks;
         private decimal _botsDepo;
         private int _quantity;
         private decimal _sum;
@@ -29,35 +31,42 @@ namespace BrokerAppTest.ViewModels
 
         public ObservableCollection<Operation> Operations
         {
-            get { return _operations; }
-            set { SetProperty(ref _operations, value); }
+            get => _operations;
+            set => SetProperty(ref _operations, value);
         }
 
         public decimal PlayersDepo
         {
-            get { return _playersDepo; }
-            set { SetProperty(ref _playersDepo, value); }
+            get => _playersDepo;
+            set => SetProperty(ref _playersDepo, value);
         }
 
         public int PlayersStocks
         {
-            get { return _playersStocks; }
-            set { SetProperty(ref _playersStocks, value); }
+            get => _playersStocks;
+            set => SetProperty(ref _playersStocks, value);
+        }
+
+        public int BotsStocks
+        {
+            get => _botsStocks;
+            set => SetProperty(ref _botsStocks, value);
         }
 
         public decimal BotsDepo
         {
             get => _botsDepo;
-            set { SetProperty(ref _botsDepo, value); }
+            set => SetProperty(ref _botsDepo, value);
         }
 
+        [Range(0, int.MaxValue, ErrorMessage = "Число не может быть отрицательным.")]
         public int Quantity
         {
             get => _quantity;
             set
             {
                 SetProperty(ref _quantity, value);
-                if (value > 0) Sum = Quantity * StockPrice;
+                Sum = Quantity * StockPrice;
                 RaisePropertyChanged(nameof(Sum));
             }
         }
@@ -65,13 +74,17 @@ namespace BrokerAppTest.ViewModels
         public decimal Sum
         {
             get => _sum;
-            set { SetProperty(ref _sum, value); }
+            set => SetProperty(ref _sum, value);
         }
 
         public ICommand BuyCommand { get; private set; }
         public ICommand SellCommand { get; private set; }
 
-        public decimal StockPrice => StockRateSimulator.GetStockPrice();
+        public decimal StockPrice
+        {
+            get => _stockPrice;
+            set => SetProperty(ref _stockPrice, value);
+        }
 
         public bool IsRise => StockRateSimulator.IsRise();
         
@@ -80,17 +93,15 @@ namespace BrokerAppTest.ViewModels
         {
             _eventAggregator = eventAggregator;
             DataAccess.LoadPlayers();
-            Operations = new ObservableCollection<Operation>(DataAccess.GetAllOperations());
-            PlayersDepo = DataAccess.LoadDepo("Player");
-            BotsDepo = DataAccess.LoadDepo("Bot");
-            PlayersStocks = DataAccess.LoadStocks("Player");
+            StockPrice = StockRateSimulator.GetStockPrice();
+            LoadData();
 
             BuyCommand = new RelayCommand(OnBuy, OnCanBuy);
             SellCommand = new RelayCommand(OnSell, OnCanSell);
 
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _timer.Start();
-            _timer.Tick += (o, e) => RaiseBindableProperties();
+            _timer.Tick += (o, e) => RefreshStockPrice();
         }
 
         private bool OnCanSell()
@@ -101,7 +112,7 @@ namespace BrokerAppTest.ViewModels
         private void OnSell()
         {
             DataAccess.AddOperation("Player", true, StockPrice, Quantity);
-            RaiseBindableProperties();
+            LoadData();
         }
 
         private bool OnCanBuy()
@@ -112,17 +123,60 @@ namespace BrokerAppTest.ViewModels
         private void OnBuy()
         {
             DataAccess.AddOperation("Player", false, StockPrice, Quantity);
-            RaiseBindableProperties();
+            LoadData();
         }
 
-        private void RaiseBindableProperties()
+        private void LoadData()
         {
-            RaisePropertyChanged(nameof(StockPrice));
-            RaisePropertyChanged(nameof(IsRise));
-            RaisePropertyChanged(nameof(Operations));
-            RaisePropertyChanged(nameof(PlayersStocks));
-            RaisePropertyChanged(nameof(PlayersDepo));
+            Operations = new ObservableCollection<Operation>(DataAccess.GetAllOperations());
+            PlayersDepo = DataAccess.LoadDepo("Player");
+            BotsDepo = DataAccess.LoadDepo("Bot");
+            PlayersStocks = DataAccess.LoadStocks("Player");
+            BotsStocks = DataAccess.LoadStocks("Bot");
         }
 
+        private void RefreshStockPrice()
+        {
+            StockPrice = StockRateSimulator.GetStockPrice();
+            if(Quantity!=0) Sum = Quantity * StockPrice;
+
+            BotTraider();
+
+            RaisePropertyChanged(nameof(IsRise));
+            RaisePropertyChanged(nameof(Quantity));
+        }
+
+        private void BotTraider()
+        {
+            if (!IsRise && (25 * StockPrice) <= BotsDepo)
+            {
+                if (StockPrice < 85)
+                {
+                    DataAccess.AddOperation("Bot", false, StockPrice, 25);
+                }
+                if (StockPrice < 95)
+                {
+                    DataAccess.AddOperation("Bot", false, StockPrice, 10);
+                }
+                if (StockPrice < 105)
+                {
+                    DataAccess.AddOperation("Bot", false, StockPrice, 5);
+                }
+            }
+
+            if (IsRise && 10 <= BotsStocks)
+            {
+                if (StockPrice > 122)
+                {
+                    DataAccess.AddOperation("Bot", true, StockPrice, 10);
+                }
+                if (StockPrice > 110)
+                {
+                    DataAccess.AddOperation("Bot", true, StockPrice, 5);
+                }
+            }
+
+            LoadData();
+        }
     }
 }

@@ -43,8 +43,11 @@
         </StackPanel>        
         <StackPanel Grid.Row="1" Orientation="Horizontal"
                     HorizontalAlignment="Center">
-            <TextBlock Text="Кол-во ваших акций:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="Ваши акции:" VerticalAlignment="Center" Margin="10" />
             <TextBlock Text="{Binding Path=PlayersStocks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       FontSize="30"/>
+            <TextBlock Text="Акции бота:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="{Binding Path=BotsStocks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                        FontSize="30"/>
         </StackPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal"
