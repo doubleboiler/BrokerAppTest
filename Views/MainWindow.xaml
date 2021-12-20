@@ -1,0 +1,86 @@
+﻿<Window x:Class="BrokerAppTest.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BrokerAppTest.Views"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:viewmodels="clr-namespace:BrokerAppTest.ViewModels"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:converters="clr-namespace:BrokerAppTest.Mvvm.Converters"
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainWindowViewModel}"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <converters:OnSaleToStringConverter x:Key="OnSaleToStringConverterKey"/>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverterKey"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="0.5*" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Стоимость акции Perm Dynamics" />
+            <TextBlock Text="{Binding Path=StockPrice, StringFormat=C, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                       TextAlignment="Center" FontSize="50" Foreground="{Binding Path=IsRise, Converter={StaticResource BoolToColorConverterKey}}"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Ваш депозит:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="{Binding Path=PlayersDepo, StringFormat=C, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                       FontSize="30"/>
+        </StackPanel>        
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Кол-во ваших акций:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="{Binding Path=PlayersStocks, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                       FontSize="30"/>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Orientation="Horizontal"
+                    HorizontalAlignment="Center" >
+            <TextBlock Text="Депозит бота:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="{Binding Path=BotsDepo, StringFormat=C, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                       FontSize="30"/>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center"
+                    HorizontalAlignment="Center" >
+            <TextBlock Text="Кол-во акций:" VerticalAlignment="Center" Margin="10" />
+            <TextBox Text="{Binding Path=Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="50" VerticalAlignment="Center" FontSize="20"/>
+            <TextBlock Text="сумма:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="{Binding Path=Sum, StringFormat=C, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       FontSize="20" VerticalAlignment="Center"/>
+            <Button x:Name="Buy_btn" Content="Купить" Command="{Binding BuyCommand}" Margin="10" />
+            <Button x:Name="Sell_btn" Content="Продать" Command="{Binding SellCommand}" Margin="0 10" />
+        </StackPanel>
+        
+        <DataGrid x:Name="Operations" ItemsSource="{Binding Path=Operations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  Grid.Column="1" Grid.RowSpan="4" CanUserAddRows="False" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Брокер" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Path=BrokerInfo.OrgName}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Дата" Binding="{Binding Path=OperationDate}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Кол-во акций" Binding="{Binding Path=Quantity}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Цена за акцию" Binding="{Binding Path=Price, StringFormat=C}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Действие" Binding="{Binding Path=IsSale, Converter={StaticResource OnSaleToStringConverterKey}}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Сумма сделки" Binding="{Binding Path=OperationSum, StringFormat=C}" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </Grid>
+</Window>
