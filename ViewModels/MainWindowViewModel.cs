@@ -1,13 +1,14 @@
-﻿using BrokerAppTest.Models;
-using BrokerAppTest.Data;
-using Prism.Mvvm;
-using System.Collections.ObjectModel;
-using Prism.Events;
+﻿using BrokerAppTest.Data;
+using BrokerAppTest.Models;
+using BrokerAppTest.Mvvm;
 using BrokerAppTest.Services;
-using System.Windows.Threading;
+using Prism.Events;
+using Prism.Mvvm;
 using System;
+using System.Collections.ObjectModel;
+using System.Linq.Expressions;
 using System.Windows.Input;
-using Prism.Commands;
+using System.Windows.Threading;
 
 namespace BrokerAppTest.ViewModels
 {
@@ -29,39 +30,25 @@ namespace BrokerAppTest.ViewModels
         public ObservableCollection<Operation> Operations
         {
             get { return _operations; }
-            set
-            {
-                _operations = value;
-                RaisePropertyChanged(nameof(Operations));
-            }
+            set { SetProperty(ref _operations, value); }
         }
 
         public decimal PlayersDepo
         {
             get { return _playersDepo; }
-            set
-            {
-                _playersDepo = value; 
-                RaisePropertyChanged(nameof(PlayersDepo));
-                RaisePropertyChanged(nameof(BuyCommand));
-            }
+            set { SetProperty(ref _playersDepo, value); }
         }
 
         public int PlayersStocks
         {
             get { return _playersStocks; }
-            set
-            {
-                _playersStocks = value;
-                RaisePropertyChanged(nameof(PlayersStocks));
-                RaisePropertyChanged(nameof(SellCommand));
-            }
+            set { SetProperty(ref _playersStocks, value); }
         }
 
         public decimal BotsDepo
         {
             get => _botsDepo;
-            set { _botsDepo = value; RaisePropertyChanged(nameof(BotsDepo)); }
+            set { SetProperty(ref _botsDepo, value); }
         }
 
         public int Quantity
@@ -69,19 +56,16 @@ namespace BrokerAppTest.ViewModels
             get => _quantity;
             set
             {
-                _quantity = value;
+                SetProperty(ref _quantity, value);
                 if (value > 0) Sum = Quantity * StockPrice;
-                RaisePropertyChanged(nameof(Quantity));
                 RaisePropertyChanged(nameof(Sum));
-                RaisePropertyChanged(nameof(BuyCommand));
-                RaisePropertyChanged(nameof(SellCommand));
             }
         }
 
         public decimal Sum
         {
             get => _sum;
-            set { _sum = value; RaisePropertyChanged(nameof(Sum)); }
+            set { SetProperty(ref _sum, value); }
         }
 
         public ICommand BuyCommand { get; private set; }
@@ -101,8 +85,8 @@ namespace BrokerAppTest.ViewModels
             BotsDepo = DataAccess.LoadDepo("Bot");
             PlayersStocks = DataAccess.LoadStocks("Player");
 
-            BuyCommand = new DelegateCommand(OnBuy, OnCanBuy);
-            SellCommand = new DelegateCommand(OnSell, OnCanSell);
+            BuyCommand = new RelayCommand(OnBuy, OnCanBuy);
+            SellCommand = new RelayCommand(OnSell, OnCanSell);
 
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
             _timer.Start();
@@ -116,8 +100,8 @@ namespace BrokerAppTest.ViewModels
 
         private void OnSell()
         {
-            DataAccess.AddOperation(1, true, StockPrice, Quantity);
-            RaisePropertyChanged(nameof(Operations));
+            DataAccess.AddOperation("Player", true, StockPrice, Quantity);
+            RaiseBindableProperties();
         }
 
         private bool OnCanBuy()
@@ -127,14 +111,18 @@ namespace BrokerAppTest.ViewModels
 
         private void OnBuy()
         {
-            DataAccess.AddOperation(1, false, StockPrice, Quantity);
-            RaisePropertyChanged(nameof(Operations));
+            DataAccess.AddOperation("Player", false, StockPrice, Quantity);
+            RaiseBindableProperties();
         }
 
         private void RaiseBindableProperties()
         {
             RaisePropertyChanged(nameof(StockPrice));
             RaisePropertyChanged(nameof(IsRise));
+            RaisePropertyChanged(nameof(Operations));
+            RaisePropertyChanged(nameof(PlayersStocks));
+            RaisePropertyChanged(nameof(PlayersDepo));
         }
+
     }
 }

@@ -48,24 +48,44 @@ namespace BrokerAppTest.Data
             }
         }
 
-        public static int LoadStocks(string name)
+        public static int LoadStocks(string brokerName)
         {
             using (BrokerContext db = new BrokerContext())
             {
-                var broker = db.Brokers.FirstOrDefault(e => e.OrgName == name);
+                var broker = db.Brokers.FirstOrDefault(e => e.OrgName == brokerName);
 
                 if (broker != null) return broker.StocksQuantity;
-                else throw new System.Exception($"Брокер {name} не найден"); ;
+                else throw new System.Exception($"Брокер {brokerName} не найден"); ;
             }
         }
 
-        public static void AddOperation(int brokerId, bool isSale, decimal price, int quantity)
+        public static void AddOperation(string brokerName, bool isSale, decimal price, int quantity)
         {
             using (BrokerContext db = new BrokerContext())
             {
-                db.Operations.Add(new Operation()
-                { BrokerInfoId = brokerId, IsSale = isSale, OperationDate = System.DateTime.Now,
-                Price = price, Quantity = quantity });
+                var broker = db.Brokers.FirstOrDefault(e => e.OrgName == brokerName);
+
+                Operation op = new Operation()
+                {
+                    BrokerInfoId = broker.Id,
+                    IsSale = isSale,
+                    OperationDate = System.DateTime.Now,
+                    Price = price,
+                    Quantity = quantity
+                };
+
+                db.Operations.Add(op);
+
+                if (isSale)
+                {
+                    broker.StocksQuantity -= quantity;
+                    broker.Deposit += quantity * price;
+                }
+                else
+                {
+                    broker.StocksQuantity += quantity;
+                    broker.Deposit -= quantity * price;
+                }
 
                 db.SaveChanges();
             }

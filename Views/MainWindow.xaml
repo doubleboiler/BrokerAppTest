@@ -35,22 +35,22 @@
                        TextAlignment="Center" FontSize="50" Foreground="{Binding Path=IsRise, Converter={StaticResource BoolToColorConverterKey}}"/>
         </StackPanel>
         
-        <StackPanel Grid.Row="1" Orientation="Horizontal"
-                    HorizontalAlignment="Center">
-            <TextBlock Text="Ваш депозит:" VerticalAlignment="Center" Margin="10" />
-            <TextBlock Text="{Binding Path=PlayersDepo, StringFormat=C, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                       FontSize="30"/>
-        </StackPanel>        
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Center">
+            <TextBlock Text="Ваш депозит:" VerticalAlignment="Center" Margin="10" />
+            <TextBlock Text="{Binding Path=PlayersDepo, StringFormat=C, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       FontSize="30"/>
+        </StackPanel>        
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Center">
             <TextBlock Text="Кол-во ваших акций:" VerticalAlignment="Center" Margin="10" />
-            <TextBlock Text="{Binding Path=PlayersStocks, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            <TextBlock Text="{Binding Path=PlayersStocks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                        FontSize="30"/>
         </StackPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal"
                     HorizontalAlignment="Center" >
             <TextBlock Text="Депозит бота:" VerticalAlignment="Center" Margin="10" />
-            <TextBlock Text="{Binding Path=BotsDepo, StringFormat=C, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            <TextBlock Text="{Binding Path=BotsDepo, StringFormat=C, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                        FontSize="30"/>
         </StackPanel>
         <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center"

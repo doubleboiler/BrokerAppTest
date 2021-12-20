@@ -119,6 +119,7 @@
     <Compile Include="Mvvm\Converters\OnSaleToStringConverter.cs" />
     <Compile Include="Data\BrokerContext.cs" />
     <Compile Include="Data\DataAccess.cs" />
+    <Compile Include="Mvvm\RelayCommand.cs" />
     <Compile Include="Services\StockRateSimulator.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
